@@ -1,6 +1,6 @@
-package com.mysite.sbb.meetingBoard.meetingController.questionController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.questionController;
 
-import com.mysite.sbb.meetingBoard.meetingController.answerController.AnswerForm;
+import com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.answerController.AnswerForm;
 import com.mysite.sbb.entity.answer.Answer;
 import com.mysite.sbb.entity.question.Question;
 import com.mysite.sbb.meetingBoard.meetingService.AnswerService;

@@ -1,4 +1,4 @@
-package com.mysite.sbb.meetingBoard.meetingController.commentController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.commentController;
 
 import lombok.Getter;
 import lombok.Setter;

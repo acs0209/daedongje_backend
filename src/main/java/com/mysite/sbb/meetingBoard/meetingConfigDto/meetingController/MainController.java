@@ -1,4 +1,4 @@
-package com.mysite.sbb.meetingBoard.meetingController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

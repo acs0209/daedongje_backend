@@ -4,7 +4,7 @@ import com.mysite.sbb.meetingBoard.meetingApi.answerApiController.AnswerDto;
 import com.mysite.sbb.meetingBoard.meetingApi.commentApiController.CommentDto;
 import com.mysite.sbb.meetingBoard.meetingConfigDto.MeetingDeleteInfoDto;
 import com.mysite.sbb.meetingBoard.meetingConfigDto.MeetingSuccessDto;
-import com.mysite.sbb.meetingBoard.meetingController.questionController.QuestionForm;
+import com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.questionController.QuestionForm;
 import com.mysite.sbb.entity.answer.Answer;
 import com.mysite.sbb.entity.comment.Comment;
 import com.mysite.sbb.entity.question.Question;
@@ -64,8 +64,9 @@ public class QuestionApiController {
        답변 페이징 처리를 위해 @RequestParam(value = "page", defaultValue = "0") int page 추가
      * */
     @GetMapping("/detail/{id}")
-    public ResponseEntity<Map<String, Object>> detail(@PathVariable("id") Long id,
-                         @RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<Map<String, Object>> detail(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "page", defaultValue = "0") int page) {
 
         // 답변 페이징 처리
         Page<Answer> pagingAnswer = answerService.getList(page, id);

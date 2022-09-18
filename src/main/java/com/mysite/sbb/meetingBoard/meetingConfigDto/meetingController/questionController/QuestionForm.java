@@ -1,4 +1,4 @@
-package com.mysite.sbb.meetingBoard.meetingController.questionController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.questionController;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;

@@ -3,7 +3,7 @@ package com.mysite.sbb.meetingBoard.meetingApi.answerApiController;
 import com.mysite.sbb.meetingBoard.meetingConfigDto.MeetingDeleteInfoDto;
 import com.mysite.sbb.meetingBoard.meetingConfigDto.MeetingModifyInfoDto;
 import com.mysite.sbb.meetingBoard.meetingConfigDto.MeetingSuccessDto;
-import com.mysite.sbb.meetingBoard.meetingController.answerController.AnswerForm;
+import com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.answerController.AnswerForm;
 import com.mysite.sbb.entity.answer.Answer;
 import com.mysite.sbb.entity.question.Question;
 import com.mysite.sbb.meetingBoard.meetingService.AnswerService;

@@ -1,4 +1,4 @@
-package com.mysite.sbb.meetingBoard.meetingController.answerController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.answerController;
 
 import com.mysite.sbb.meetingBoard.meetingService.AnswerService;
 import lombok.RequiredArgsConstructor;

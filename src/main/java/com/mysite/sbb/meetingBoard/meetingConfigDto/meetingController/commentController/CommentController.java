@@ -1,4 +1,4 @@
-package com.mysite.sbb.meetingBoard.meetingController.commentController;
+package com.mysite.sbb.meetingBoard.meetingConfigDto.meetingController.commentController;
 
 import com.mysite.sbb.meetingBoard.meetingService.AnswerService;
 import com.mysite.sbb.meetingBoard.meetingService.CommentService;
