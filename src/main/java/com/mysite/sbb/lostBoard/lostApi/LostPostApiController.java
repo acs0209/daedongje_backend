@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,6 +47,9 @@ class LostPostApiController {
 
     @Autowired
     private LostCommentService lostCommentService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // 페이징, 검색(제목, 내용에 포함) 조회 API
     @GetMapping("/posts")
@@ -98,6 +102,9 @@ class LostPostApiController {
     @PostMapping("/posts")
     LostSuccessDto newQuestion(@Valid LostPost newLostPost, MultipartFile file, BindingResult bindingResult) throws Exception {
 
+        String encodePassword = passwordEncoder.encode(newLostPost.getPassword());
+        newLostPost.setPassword(encodePassword);
+
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
@@ -143,7 +150,7 @@ class LostPostApiController {
         // 삭제할 파일경로
         String deleteFilePath = lostPostService.getFilePath(exLostPost);
 
-        if (newLostPost.getPassword().equals(exLostPost.getPassword())) {
+        if (passwordEncoder.matches(newLostPost.getPassword(), exLostPost.getPassword())) {
 
             repository.findById(id)
                 .map(question -> {

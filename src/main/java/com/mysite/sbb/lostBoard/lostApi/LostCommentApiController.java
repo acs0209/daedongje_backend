@@ -11,6 +11,7 @@ import com.mysite.sbb.lostBoard.lostService.LostPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -32,6 +33,9 @@ public class LostCommentApiController {
     @Autowired
     private LostPostService lostPostService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 //    // 전체 대댓글 조회 API
 //    @GetMapping("/comments")
 //    public List<Comment> all() {
@@ -51,6 +55,9 @@ public class LostCommentApiController {
     // 대댓글 등록 API
     @PostMapping(value = "/comments/{id}")
     public ResponseEntity<LostSuccessDto> createLostPostComment(@PathVariable("id") Long id, @Valid @RequestBody LostComment lostCommentForm) {
+
+        String encodePassword = passwordEncoder.encode(lostCommentForm.getPassword());
+        lostCommentForm.setPassword(encodePassword);
 
         if (lostCommentForm.getUsername() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
@@ -79,7 +86,7 @@ public class LostCommentApiController {
         LostComment exLostComment = lostCommentRepository.findById(id).orElse(null);
         if (exLostComment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
-        if (newLostComment.getPassword().equals(exLostComment.getPassword())) {
+        if (passwordEncoder.matches(newLostComment.getPassword(), exLostComment.getPassword())) {
 
         return lostCommentRepository.findById(id)
                 .map(comment -> {

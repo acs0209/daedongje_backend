@@ -8,8 +8,10 @@ import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostPostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,6 +25,7 @@ public class LostAnswerApiController {
     private final LostPostService lostPostService;
     private final LostAnswerRepository lostAnswerRepository;
     private final LostAnswerService lostAnswerService;
+    private final PasswordEncoder passwordEncoder;
 
 //    // 전체 댓글 조회 API
 //    @GetMapping("/answers")
@@ -43,6 +46,9 @@ public class LostAnswerApiController {
     // 댓글 등록 API
     @PostMapping("/answers/{id}")
     public ResponseEntity<LostSuccessDto> answerCreate(@PathVariable Long id, @Valid @RequestBody LostAnswer lostAnswerForm){
+
+        String encodePassword = passwordEncoder.encode(lostAnswerForm.getPassword());
+        lostAnswerForm.setPassword(encodePassword);
 
         if (lostAnswerForm.getUsername() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
@@ -73,7 +79,7 @@ public class LostAnswerApiController {
         LostAnswer exLostAnswer = lostAnswerRepository.findById(id).orElse(null);
         if (exLostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
-        if (newLostAnswer.getPassword().equals(exLostAnswer.getPassword())) {
+        if (passwordEncoder.matches(newLostAnswer.getPassword(), exLostAnswer.getPassword())) {
 
         return lostAnswerRepository.findById(id)
                 .map(answer -> {
