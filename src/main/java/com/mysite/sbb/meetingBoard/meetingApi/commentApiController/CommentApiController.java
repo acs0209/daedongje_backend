@@ -46,27 +46,6 @@ public class CommentApiController {
         }
     }
 
-//    // 질문 댓글 생성
-//    @PostMapping(value = "/post/{id}")
-//    public ResponseEntity<CommentCreateForm> createQuestionComment(@PathVariable("id") Long id, @Valid @RequestBody CommentForm commentForm,
-//                                        BindingResult bindingResult) {
-//
-//        Optional<Question> question = Optional.ofNullable(this.questionService.getQuestion(id));
-//
-//        if (question.isPresent()) {
-//            if (bindingResult.hasErrors()) {
-//                throw new IllegalArgumentException("잘못된 입력 값입니다.");
-//            }
-//            Comment c = this.commentService.create(question.get(), commentForm.getContent(), commentForm.getUsername(), commentForm.getPassword());
-//
-//            CommentCreateForm commentCreateForm = new CommentCreateForm(commentForm.getContent(), commentForm.getUsername());
-//            return ResponseEntity.ok(commentCreateForm);
-//
-//        } else {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
-//        }
-//
-//    }
 
 //    @GetMapping("/{id}")
 //    public ResponseEntity<CommentForm> modifyComment(CommentForm commentForm, @PathVariable("id") Long id) {

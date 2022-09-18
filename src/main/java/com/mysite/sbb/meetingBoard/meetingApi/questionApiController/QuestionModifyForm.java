@@ -11,9 +11,12 @@ public class QuestionModifyForm {
 
     private String content;
 
+    private boolean success;
+
     public QuestionModifyForm(String subject, String content) {
         this.subject = subject;
         this.content = content;
+        this.success = true;
     }
 
 }

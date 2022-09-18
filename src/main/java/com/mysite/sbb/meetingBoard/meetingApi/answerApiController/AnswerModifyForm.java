@@ -10,8 +10,11 @@ import lombok.Setter;
 public class AnswerModifyForm {
 
     private String content;
+    private boolean success;
 
     public AnswerModifyForm(String content) {
+
         this.content = content;
+        this.success = true;
     }
 }

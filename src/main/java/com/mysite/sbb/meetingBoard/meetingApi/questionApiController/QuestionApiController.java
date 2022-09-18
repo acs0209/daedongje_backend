@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,12 +34,7 @@ public class QuestionApiController {
     private final AnswerService answerService;
     private final CommentService commentService;
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<QuestionApiForm> question(@PathVariable("id") Long id) {
-//        Question question = questionService.getQuestion(id);
-//        QuestionApiForm questionApiForm = new QuestionApiForm(question.getSubject(), question.getContent(), question.getUsername());
-//        return ResponseEntity.ok(questionApiForm);
-//    }
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/list")
     public ResponseEntity<Page<QuestionDto>> list(@RequestParam(value = "page", defaultValue = "0") int page,
@@ -109,22 +106,12 @@ public class QuestionApiController {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-        Question question = questionService.create(questionForm.getSubject(), questionForm.getContent(), questionForm.getUsername(), questionForm.getPassword());
+        String encodePassword = passwordEncoder.encode(questionForm.getPassword());
+        Question question = questionService.create(questionForm.getContent(), questionForm.getUsername(), encodePassword);
 
-        QuestionApiForm questionApiForm = new QuestionApiForm(questionForm.getSubject(), questionForm.getContent(), questionForm.getUsername(), question.getCreateDate());
+        QuestionApiForm questionApiForm = new QuestionApiForm(questionForm.getContent(), questionForm.getUsername(), question.getCreateDate());
         return ResponseEntity.ok(questionApiForm);
     }
-
-    // 수정 내용 조회 api
-//    @GetMapping("/modify/{id}")
-//    public ResponseEntity<QuestionApiForm> questionModify(QuestionForm questionForm, @PathVariable("id") Long id) {
-//        Question question = this.questionService.getQuestion(id);
-//        questionForm.setSubject(question.getSubject());
-//        questionForm.setContent(question.getContent());
-//
-//        QuestionApiForm questionApiForm = new QuestionApiForm(question.getSubject(), question.getContent(), question.getUsername());
-//        return ResponseEntity.ok(questionApiForm);
-//    }
 
     // 수정 api
     @PutMapping("/{id}")
@@ -134,13 +121,15 @@ public class QuestionApiController {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-        Question question = this.questionService.getQuestion(id);
 
-        if (!question.getPassword().equals(questionRequestDto.getPassword())) {
+        Question question = this.questionService.getQuestion(id);
+        // !question.getPassword().equals(passwordEncoder.encode(questionRequestDto.getPassword()))
+        if ( !passwordEncoder.matches(questionRequestDto.getPassword(), question.getPassword()) ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
         }
 
         this.questionService.modify(question, questionRequestDto.getSubject(), questionRequestDto.getContent());
+
         QuestionModifyForm questionModifyForm = new QuestionModifyForm(question.getSubject(), question.getContent());
         return ResponseEntity.ok(questionModifyForm);
     }
@@ -157,4 +146,15 @@ public class QuestionApiController {
         MeetingSuccessDto meetingSuccessDto = new MeetingSuccessDto(this.questionService.delete(question));
         return ResponseEntity.ok(meetingSuccessDto);
     }
+
+    // 수정 내용 조회 api
+//    @GetMapping("/modify/{id}")
+//    public ResponseEntity<QuestionApiForm> questionModify(QuestionForm questionForm, @PathVariable("id") Long id) {
+//        Question question = this.questionService.getQuestion(id);
+//        questionForm.setSubject(question.getSubject());
+//        questionForm.setContent(question.getContent());
+//
+//        QuestionApiForm questionApiForm = new QuestionApiForm(question.getSubject(), question.getContent(), question.getUsername());
+//        return ResponseEntity.ok(questionApiForm);
+//    }
 }

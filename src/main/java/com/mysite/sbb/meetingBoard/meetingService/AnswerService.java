@@ -40,9 +40,9 @@ public class AnswerService {
     // 답변 페이징 처리
     public Page<Answer> getList(int page, Long id) {
         Question question = questionService.getQuestion(id);
-        List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("createDate"));
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
+//        List<Sort.Order> sorts = new ArrayList<>();
+//        sorts.add(Sort.Order.desc("createDate"));
+        Pageable pageable = PageRequest.of(page, 10);
         return this.answerRepository.findAllByQuestion(question, pageable);
     }
 

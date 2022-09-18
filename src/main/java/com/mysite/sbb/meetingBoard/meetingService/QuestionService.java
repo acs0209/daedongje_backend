@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -22,6 +23,8 @@ import java.util.Optional;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
 
     public Page<Question> findAll(int page) {
@@ -63,9 +66,8 @@ public class QuestionService {
        아닌지를 확인한 후에 get() 으로 실제 Question 객체 값을 얻어야 한다.
     * */
     }
-    public Question create(String subject, String content, String username, String password) {
+    public Question create(String content, String username, String password) {
         Question q = new Question();
-        q.setSubject(subject);
         q.setContent(content);
         q.setCreateDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
         q.setUsername(username);

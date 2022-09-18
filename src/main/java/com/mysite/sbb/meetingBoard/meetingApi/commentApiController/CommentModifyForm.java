@@ -10,9 +10,12 @@ import lombok.Setter;
 public class CommentModifyForm {
 
     private String content;
+    private boolean success;
 
     public CommentModifyForm(String content) {
+
         this.content = content;
+        this.success = true;
     }
 
 }
