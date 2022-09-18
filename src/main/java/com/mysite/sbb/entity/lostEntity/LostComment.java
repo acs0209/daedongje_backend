@@ -29,7 +29,7 @@ public class LostComment {
 
     private String createDate;
 
-    @Size(min=1, message = "닉네임은 한 글자 이상이어야 합니다.")
+    @Size(min=1, max=15, message = "닉네임은 한 글자 이상, 15 글자 이하여야 합니다.")
     private String username;
 
     @NotNull(message = "비밀번호는 필수 항목입니다.")
