@@ -19,12 +19,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.File;
 import java.time.LocalDateTime;
@@ -47,6 +47,9 @@ class LostPostApiController {
 
     @Autowired
     private LostCommentService lostCommentService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // 페이징, 검색(제목, 내용에 포함) 조회 API
     @GetMapping("/posts")
@@ -74,7 +77,7 @@ class LostPostApiController {
         }
 
         LostPostDto lostPostDto = new LostPostDto(lostPost.getId(), lostPost.getSubject(), lostPost.getContent(),
-                lostPost.getCreateDate(), lostPost.getUsername(), lostPost.getIsLost());
+                lostPost.getCreateDate(), lostPost.getUsername(), lostPost.getIsLost(), lostPost.getFilename(), lostPost.getFilepath());
         
         Page<LostAnswerDto> answerPagingDto = pagingAnswer.map(
                 post -> new LostAnswerDto(
@@ -97,7 +100,10 @@ class LostPostApiController {
 
     // 글 작성 API
     @PostMapping("/posts")
-    LostPost newQuestion(@Valid LostPost newLostPost, MultipartFile file, BindingResult bindingResult, HttpServletRequest request) throws Exception {
+    LostSuccessDto newQuestion(@Valid LostPost newLostPost, MultipartFile file, BindingResult bindingResult) throws Exception {
+
+        String encodePassword = passwordEncoder.encode(newLostPost.getPassword());
+        newLostPost.setPassword(encodePassword);
 
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
@@ -113,22 +119,30 @@ class LostPostApiController {
         if (file == null) {
             repository.save(newLostPost);
         } else {
-            lostPostService.write(newLostPost, file, request);
+            lostPostService.write(newLostPost, file);
         }
 
-        return repository.findById(newLostPost.getId()).orElse(null);
+        LostSuccessDto lostSuccessDto;
+        // DB에 잘 저장 되었으면 true 아니면 false
+        if (repository.findById(newLostPost.getId()).orElse(null) != null) {
+            lostSuccessDto = new LostSuccessDto(true);
+        } else {
+            lostSuccessDto = new LostSuccessDto(false);
+        }
+
+        return lostSuccessDto;
     }
 
     // 글 수정 API
     @PutMapping("/posts/{id}")
-    ResponseEntity<LostPost> replaceQuestion(@Valid LostPost newLostPost, @PathVariable Long id, MultipartFile file, BindingResult bindingResult, HttpServletRequest request) {
+    ResponseEntity<LostSuccessDto> replaceQuestion(@Valid LostPost newLostPost, @PathVariable Long id, MultipartFile file, BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
         LostPost exLostPost = repository.findById(id).orElse(null);
-        if (exLostPost == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (exLostPost == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         // 새로운 파일경로
         String filePath = lostPostService.getFilePath(newLostPost);
@@ -136,49 +150,57 @@ class LostPostApiController {
         // 삭제할 파일경로
         String deleteFilePath = lostPostService.getFilePath(exLostPost);
 
-        if (newLostPost.getPassword().equals(exLostPost.getPassword())) {
+        if (passwordEncoder.matches(newLostPost.getPassword(), exLostPost.getPassword())) {
 
-            return repository.findById(id)
-                    .map(question -> {
-                        question.setSubject(newLostPost.getSubject());
-                        question.setContent(newLostPost.getContent());
-                        question.setIsLost(newLostPost.getIsLost());
+            repository.findById(id)
+                .map(question -> {
+                    question.setSubject(newLostPost.getSubject());
+                    question.setContent(newLostPost.getContent());
+                    question.setIsLost(newLostPost.getIsLost());
 
-                        if (file == null) {
-                            lostPostService.deleteFile(question);
-                            repository.save(question);
-                            return ResponseEntity.status(HttpStatus.OK).body(question);
-                        }
+                    if (file == null) {
+                        lostPostService.deleteFile(question);
+                        repository.save(question);
 
-                        if (file.isEmpty()) {
-                            lostPostService.deleteFile(question);
-                            repository.save(question);
-                            return ResponseEntity.status(HttpStatus.OK).body(question);
-                        } else {
-                            try {
-                                // 파일을 수정할 경우 기존 파일 제거
-                                if (!filePath.equals(deleteFilePath)) {
-                                    File deleteFile = new File(deleteFilePath);
-                                    deleteFile.delete();
-                                }
+                        LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                        return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
+                    }
 
-                                lostPostService.write(question, file, request);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
+                    if (file.isEmpty()) {
+                        lostPostService.deleteFile(question);
+                        repository.save(question);
+
+                        LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                        return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
+                    } else {
+                        try {
+                            // 파일을 수정할 경우 기존 파일 제거
+                            if (!filePath.equals(deleteFilePath)) {
+                                File deleteFile = new File(deleteFilePath);
+                                deleteFile.delete();
                             }
-                        }
 
-                        LostPost resultLostPost = repository.findById(question.getId()).orElse(null);
-                        return ResponseEntity.status(HttpStatus.OK).body(resultLostPost);
-                    })
-                    .orElseGet(() -> {
-                        newLostPost.setId(id);
-                        repository.save(newLostPost);
-                        return ResponseEntity.status(HttpStatus.OK).body(newLostPost);
-                    });
+                            lostPostService.write(question, file);
+                            LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                            return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                })
+                .orElseGet(() -> {
+                    newLostPost.setId(id);
+                    repository.save(newLostPost);
+
+                    LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                    return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
+                });
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
         }
+        LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+        return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
     }
 
 //    // 파일 삭제 API
@@ -197,7 +219,7 @@ class LostPostApiController {
 
         LostPost lostPost = repository.findById(id).orElse(null);
 
-        if (lostPost == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (lostPost == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         if (lostDeleteForm.getPassword() == null || lostDeleteForm.getPassword().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");

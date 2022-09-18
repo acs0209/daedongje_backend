@@ -19,18 +19,25 @@ public class LostPostDto {
 
     private String createDate;
 
-    private String nickname;
+    private String username;
 
     private Boolean isLost;
 
+    private String filename;
+
+    private String filepath;
+
     public LostPostDto(Long id, String title, String content, String createDate,
-                       String nickname, Boolean isLost) {
+                       String username, Boolean isLost, String filename, String filepath) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.createDate = createDate;
-        this.nickname = nickname;
+        this.username = username;
         this.isLost = isLost;
+        this.filename = filename;
+        this.filepath = filepath;
+
     }
 
 
