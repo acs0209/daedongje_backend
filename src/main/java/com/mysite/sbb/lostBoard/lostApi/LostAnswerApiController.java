@@ -38,35 +38,42 @@ public class LostAnswerApiController {
 //    public ResponseEntity<Answer> one(@PathVariable Long id) {
 //
 //        Answer answer = answerRepository.findById(id).orElse(null);
-//        if (answer == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        if (answer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 //        return new ResponseEntity<>(answer, HttpStatus.OK);
 //    }
 
     // 댓글 등록 API
     @PostMapping("/answers/{id}")
-    public ResponseEntity<CreateForm> answerCreate(@PathVariable Long id, @Valid @RequestBody LostAnswer lostAnswerForm){
+    public ResponseEntity<LostSuccessDto> answerCreate(@PathVariable Long id, @Valid @RequestBody LostAnswer lostAnswerForm){
 
         if (lostAnswerForm.getUsername() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
         }
 
         LostPost lostPost = this.lostPostService.getQuestion(id);
-        if (lostPost == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (lostPost == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         LostAnswer lostAnswer = this.lostAnswerService.create(lostPost, lostAnswerForm);
-        if (lostAnswer == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-        CreateForm createForm = new CreateForm(lostAnswerForm.getContent(), lostAnswerForm.getUsername(), lostAnswer.getCreateDate());
+        LostSuccessDto lostSuccessDto;
+        // DB에 잘 저장 되었으면 true 아니면 false
+        if (lostAnswerRepository.findById(lostAnswer.getId()).orElse(null) != null) {
+            lostSuccessDto = new LostSuccessDto(true);
+        } else {
+            lostSuccessDto = new LostSuccessDto(false);
+        }
 
-        return (lostAnswer != null) ? ResponseEntity.status(HttpStatus.OK).body(createForm) : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        if (lostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
+
+        return (lostAnswer != null) ? ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto) : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     // 댓글 수정 api
     @PutMapping("/answers/{id}")
-    public ResponseEntity<ModifyForm> answerModify(@Valid @RequestBody LostAnswer newLostAnswer, @PathVariable("id") Long id) {
+    public ResponseEntity<LostSuccessDto> answerModify(@Valid @RequestBody LostAnswer newLostAnswer, @PathVariable("id") Long id) {
 
         LostAnswer exLostAnswer = lostAnswerRepository.findById(id).orElse(null);
-        if (exLostAnswer == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (exLostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         if (newLostAnswer.getPassword().equals(exLostAnswer.getPassword())) {
 
@@ -74,14 +81,16 @@ public class LostAnswerApiController {
                 .map(answer -> {
                     answer.setContent(newLostAnswer.getContent());
                     lostAnswerRepository.save(answer);
-                    ModifyForm modifyForm = new ModifyForm(newLostAnswer.getContent(), exLostAnswer.getCreateDate());
-                    return ResponseEntity.status(HttpStatus.OK).body(modifyForm);
+
+                    LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                    return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
                 })
                 .orElseGet(() -> {
                     newLostAnswer.setId(id);
                     lostAnswerRepository.save(newLostAnswer);
-                    ModifyForm modifyForm = new ModifyForm(newLostAnswer.getContent(), exLostAnswer.getCreateDate());
-                    return ResponseEntity.status(HttpStatus.OK).body(modifyForm);
+
+                    LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                    return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
                 });
 
         } else {

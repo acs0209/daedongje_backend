@@ -39,9 +39,7 @@ public class LostAnswerService {
     // 답변 페이징 처리
     public Page<LostAnswer> getList(int page, Long id) {
         LostPost lostPost = lostPostService.getQuestion(id);
-        List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("createDate"));
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
+        Pageable pageable = PageRequest.of(page, 10);
         return this.lostAnswerRepository.findAllByLostPost(lostPost, pageable);
     }
 

@@ -26,6 +26,7 @@ public class LostPost {
     @Column
     private String createDate;
 
+    @NotNull
     private Boolean isLost;   // 분실, 발견
 
     private String filename;

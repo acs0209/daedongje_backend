@@ -9,6 +9,7 @@ import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
 import com.mysite.sbb.lostBoard.lostForm.ModifyForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostCommentService;
+import com.mysite.sbb.lostBoard.lostService.LostPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,9 @@ public class LostCommentApiController {
     @Autowired
     private LostAnswerService lostAnswerService;
 
+    @Autowired
+    private LostPostService lostPostService;
+
 //    // 전체 대댓글 조회 API
 //    @GetMapping("/comments")
 //    public List<Comment> all() {
@@ -42,35 +46,40 @@ public class LostCommentApiController {
 //    public ResponseEntity<Comment> one(@PathVariable Long id) {
 //
 //        Comment comment = commentRepository.findById(id).orElse(null);
-//        if (comment == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        if (comment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 //        return new ResponseEntity<>(comment, HttpStatus.OK);
 //    }
 
     // 대댓글 등록 API
     @PostMapping(value = "/comments/{id}")
-    public ResponseEntity<CreateForm> createLostPostComment(@PathVariable("id") Long id, @Valid @RequestBody LostComment lostCommentForm) {
+    public ResponseEntity<LostSuccessDto> createLostPostComment(@PathVariable("id") Long id, @Valid @RequestBody LostComment lostCommentForm) {
 
         if (lostCommentForm.getUsername() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
         }
 
         LostAnswer lostAnswer = lostAnswerService.getAnswer(id);
-        if (lostAnswer == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (lostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         LostComment lostComment = lostCommentService.create(lostAnswer, lostCommentForm);
-        if (lostComment == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        LostSuccessDto lostSuccessDto;
+        // DB에 잘 저장 되었으면 true 아니면 false
+        if (lostCommentRepository.findById(lostComment.getId()).orElse(null) != null) {
+            lostSuccessDto = new LostSuccessDto(true);
+        } else {
+            lostSuccessDto = new LostSuccessDto(false);
+        }
+        if (lostComment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
-        CreateForm createForm = new CreateForm(lostCommentForm.getContent(), lostCommentForm.getUsername(), lostComment.getCreateDate());
-
-        return (lostComment != null) ? ResponseEntity.status(HttpStatus.OK).body(createForm) : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        return (lostComment != null) ? ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto) : ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
     // 대댓글 수정 api
     @PutMapping("/comments/{id}")
-    public ResponseEntity<ModifyForm> answerModify(@Valid @RequestBody LostComment newLostComment, @PathVariable("id") Long id) {
+    public ResponseEntity<LostSuccessDto> answerModify(@Valid @RequestBody LostComment newLostComment, @PathVariable("id") Long id) {
 
         LostComment exLostComment = lostCommentRepository.findById(id).orElse(null);
-        if (exLostComment == null) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        if (exLostComment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         if (newLostComment.getPassword().equals(exLostComment.getPassword())) {
 
@@ -78,14 +87,16 @@ public class LostCommentApiController {
                 .map(comment -> {
                     comment.setContent(newLostComment.getContent());
                     lostCommentRepository.save(comment);
-                    ModifyForm modifyForm = new ModifyForm(newLostComment.getContent(), exLostComment.getCreateDate());
-                    return ResponseEntity.status(HttpStatus.OK).body(modifyForm);
+
+                    LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                    return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
                 })
                 .orElseGet(() -> {
                     newLostComment.setId(id);
                     lostCommentRepository.save(newLostComment);
-                    ModifyForm modifyForm = new ModifyForm(newLostComment.getContent(), exLostComment.getCreateDate());
-                    return ResponseEntity.status(HttpStatus.OK).body(modifyForm);
+
+                    LostSuccessDto lostSuccessDto = new LostSuccessDto(lostPostService.isSuccessModify());
+                    return ResponseEntity.status(HttpStatus.OK).body(lostSuccessDto);
                 });
 
         } else {
