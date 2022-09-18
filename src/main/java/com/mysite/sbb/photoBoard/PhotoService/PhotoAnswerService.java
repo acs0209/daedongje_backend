@@ -25,14 +25,14 @@ public class PhotoAnswerService {
     private final PhotoQuestionService photoQuestionService;
 
     // 답변 생성
-    public PhotoAnswer create(PhotoQuestion photoQuestion, String content, String username, String password) {
+    public PhotoAnswer create(PhotoQuestion photoQuestion, String content, String username, String encodePassword) {
         PhotoAnswer photoAnswer = new PhotoAnswer();
         photoAnswer.setContent(content);
         String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")); // 작성 시간 포멧팅
         photoAnswer.setDate(currentTime);
         photoAnswer.setPhotoQuestion(photoQuestion);
         photoAnswer.setUsername(username);
-        photoAnswer.setPassword(password);
+        photoAnswer.setPassword(encodePassword);
         this.photoAnswerRepository.save(photoAnswer);
         return photoAnswer;
     }

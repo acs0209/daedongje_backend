@@ -11,6 +11,7 @@ import com.mysite.sbb.photoBoard.PhotoService.PhotoCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,8 +27,10 @@ public class PhotoCommentApi {
     private final PhotoAnswerService photoAnswerService;
     private final PhotoCommentService photoCommentService;
 
+    private final PasswordEncoder passwordEncoder;
 
-    // 답변 댓글 생성
+
+    // 답변 댓글 생성 --> 비밀번호 암호화 완료
     @PostMapping(value = "/answers/{id}")
     public ResponseEntity<PhotoCommentCreateForm> createAnswerComment(@PathVariable("id") Long id, @Valid @RequestBody PhotoCommentForm photoCommentForm,
                                                                       BindingResult bindingResult) {
@@ -38,7 +41,11 @@ public class PhotoCommentApi {
             if (bindingResult.hasErrors()) {
                 throw new IllegalArgumentException("잘못된 입력 값입니다.");
             }
-           PhotoComment c = this.photoCommentService.create(answer.get(), photoCommentForm.getContent(), photoCommentForm.getUsername(), photoCommentForm.getPassword());
+
+            // 사용자에게 입력받은 비밀번호를 암호화
+            String encodePassword = passwordEncoder.encode(photoCommentForm.getPassword());
+
+            PhotoComment c = this.photoCommentService.create(answer.get(), photoCommentForm.getContent(), photoCommentForm.getUsername(), encodePassword);
             // 이름이랑 제목만 전달
             PhotoCommentCreateForm photoCommentCreateForm = new PhotoCommentCreateForm(photoCommentForm.getContent(), photoCommentForm.getUsername(), c.getDate());
             return ResponseEntity.ok(photoCommentCreateForm);
@@ -60,7 +67,7 @@ public class PhotoCommentApi {
 //        return ResponseEntity.ok(commentForm);
 //    }
 
-    // 대댓글 수정
+    // 대댓글 수정 --> 비밀번호 암호화 완료
     @PutMapping("/{id}")
     public ResponseEntity<PhotoCommentModifyForm> modifyComment(@Valid @RequestBody PhotoModifyInfoDto photoModifyInfoDto, BindingResult bindingResult,
                                                                 @PathVariable("id") Long id) {
@@ -71,7 +78,8 @@ public class PhotoCommentApi {
         if (comment.isPresent()) {
             PhotoComment c = comment.get();
 
-            if (!c.getPassword().equals(photoModifyInfoDto.getPassword())) {
+            // 사용자가 입력한 raw 비밀번호 데이터와 암호화된 비밀번호가 다른 경우
+            if (!passwordEncoder.matches(c.getPassword(), photoModifyInfoDto.getPassword())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
             }
 
@@ -85,14 +93,15 @@ public class PhotoCommentApi {
         }
     }
 
-    // 대댓글 삭제 --> form-data로 받아야 한다.
+    // 대댓글 삭제 --> form-data로 받아야 한다. /
     @DeleteMapping("/{id}")
     public ResponseEntity<PhotoSuccessDto> deleteComment(@PathVariable("id") Long id, @Valid PhotoDeleteInfoDto deleteInfoDto) {
         Optional<PhotoComment> comment = this.photoCommentService.getComment(id);
         if (comment.isPresent()) {
             PhotoComment c = comment.get();
 
-            if (!c.getPassword().equals(deleteInfoDto.getPassword())) {
+            // 사용자가 입력한 raw한 비밀번호 데이터와 다른 경우
+            if (!passwordEncoder.matches(c.getPassword(), deleteInfoDto.getPassword())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
             }
 

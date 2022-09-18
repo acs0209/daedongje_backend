@@ -11,6 +11,7 @@ import com.mysite.sbb.photoBoard.PhotoService.PhotoQuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,18 +26,21 @@ public class PhotoAnswerApi {
     private final PhotoQuestionService photoQuestionService;
     private final PhotoAnswerService photoAnswerService;
 
-    // 댓글 작성 --> 게시글의 id 로 접근
+    private final PasswordEncoder passwordEncoder;
+
+    // 댓글 작성 --> 게시글의 id 로 접근 / 비밀번호 암호화 완료
     @PostMapping("/{id}")
     public ResponseEntity<PhotoCreateResponse> createAnswer(@PathVariable("id") Long id,
-                                                              @Valid @RequestBody PhotoAnswerForm photoAnswerForm, BindingResult bindingResult) {
+                                                            @Valid @RequestBody PhotoAnswerForm photoAnswerForm, BindingResult bindingResult) {
 
-       PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
+        PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
 
         if (bindingResult.hasErrors()) {
 
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
-        PhotoAnswer photoAnswer = this.photoAnswerService.create(photoQuestion, photoAnswerForm.getContent(), photoAnswerForm.getUsername(), photoAnswerForm.getPassword());
+        String encodePassword = passwordEncoder.encode(photoAnswerForm.getPassword()); // 비밀번호 암호화
+        PhotoAnswer photoAnswer = this.photoAnswerService.create(photoQuestion, photoAnswerForm.getContent(), photoAnswerForm.getUsername(), encodePassword);
 
         PhotoCreateResponse photoCreateResponse = new PhotoCreateResponse(photoAnswerForm.getContent(), photoAnswerForm.getUsername(), photoAnswer.getDate());
         return ResponseEntity.ok(photoCreateResponse);
@@ -51,16 +55,17 @@ public class PhotoAnswerApi {
 //        return ResponseEntity.ok(answerForm);
 //    }
 
-    // 댓글 수정
+    // 댓글 수정 --> 비밀번호 암호화 완료
     @PutMapping("/{id}")
     public ResponseEntity<PhotoAnswerModifyForm> answerModify(@Valid @RequestBody PhotoModifyInfoDto photoModifyInfoDto, BindingResult bindingResult,
                                                               @PathVariable("id") Long id) {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
-       PhotoAnswer photoAnswer = this.photoAnswerService.getPhotoAnswer(id);
+        PhotoAnswer photoAnswer = this.photoAnswerService.getPhotoAnswer(id);
 
-        if (!photoAnswer.getPassword().equals(photoModifyInfoDto.getPassword())) {
+        // 사용자가 입력한 raw한 비밀번호와 일치하지 않는 경우
+        if (!passwordEncoder.matches(photoAnswer.getPassword(), photoModifyInfoDto.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
         this.photoAnswerService.modify(photoAnswer, photoModifyInfoDto.getContent());
@@ -69,12 +74,13 @@ public class PhotoAnswerApi {
         return ResponseEntity.ok(photoAnswerModifyForm);
     }
 
-    // 댓글 삭제 --> form-data 로 보내야 함
+    // 댓글 삭제 --> form-data 로 보내야 함 / 비밀번호 암호화 완료
     @DeleteMapping("/{id}")
     public ResponseEntity<PhotoSuccessDto> answerDelete(@Valid PhotoDeleteInfoDto photoDeleteInfoDto, @PathVariable("id") Long id) {
-      PhotoAnswer photoAnswer = this.photoAnswerService.getPhotoAnswer(id);
+        PhotoAnswer photoAnswer = this.photoAnswerService.getPhotoAnswer(id);
 
-        if (!photoAnswer.getPassword().equals(photoDeleteInfoDto.getPassword())) {
+        // 사용자가 입력한 raw한 비밀번호와 암호화된 비밀번호가 같지 않은 경우
+        if (!passwordEncoder.matches(photoAnswer.getPassword(), photoDeleteInfoDto.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
 

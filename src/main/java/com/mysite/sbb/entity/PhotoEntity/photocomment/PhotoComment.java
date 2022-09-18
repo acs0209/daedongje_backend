@@ -20,20 +20,19 @@ public class PhotoComment {
     private Long id;
 
     @Column(columnDefinition = "TEXT")
-    @NotNull(message="내용은 필수 항목입니다.")
-    @Size(min=1, message="내용은 최소 한 글자 이상이어야 합니다.")
+    @NotNull(message = "내용은 필수 항목입니다.")
+    @Size(min = 1, max = 200, message = "내용은 최소 한 글자 이상, 200자 이하여야 합니다.")
     private String content;
 
-    private String date;
-
-    @Size(min=1,message="닉네임은 한 글자 이상이어야 합니다.")
+    @Size(min = 1, max = 15, message = "닉네임은 한 글자 이상, 15 글자 이하여야 합니다.")
     private String username;
 
     @JsonIgnore
-    @NotNull(message="비밀번호는 필수 항목입니다.")
-    @Size(min=4, max=50, message="비밀번호는 네 자리 이상이어야 합니다.")
+    @NotNull(message = "비밀번호는 필수 항목입니다.")
+    @Size(min = 4, max = 60, message = "비밀번호는 네 자리 이상, 20자리 이하여야 합니다.")
     private String password;
 
+    private String date;
     @JsonIgnore
     @ManyToOne
     private PhotoQuestion photoQuestion;
