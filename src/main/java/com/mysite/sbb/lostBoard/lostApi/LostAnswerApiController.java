@@ -4,9 +4,7 @@ import com.mysite.sbb.lostBoard.lostDto.LostSuccessDto;
 import com.mysite.sbb.entity.lostEntity.LostAnswer;
 import com.mysite.sbb.entity.lostEntity.LostAnswerRepository;
 import com.mysite.sbb.entity.lostEntity.LostPost;
-import com.mysite.sbb.lostBoard.lostForm.CreateForm;
 import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
-import com.mysite.sbb.lostBoard.lostForm.ModifyForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostPostService;
 import lombok.RequiredArgsConstructor;
@@ -102,7 +100,7 @@ public class LostAnswerApiController {
     @DeleteMapping("/answers/{id}")
     public ResponseEntity deleteComment(@PathVariable("id") Long id, @Valid @RequestBody LostDeleteForm lostDeleteForm) {
         LostAnswer lostAnswer = this.lostAnswerService.getAnswer(id);
-        if (lostAnswer == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
+        if (lostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         if (lostDeleteForm.getPassword() == null || lostDeleteForm.getPassword().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");

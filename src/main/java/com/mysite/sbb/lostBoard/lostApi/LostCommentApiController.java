@@ -108,7 +108,7 @@ public class LostCommentApiController {
     @DeleteMapping("/comments/{id}")
     public ResponseEntity deleteComment(@PathVariable("id") Long id, @Valid @RequestBody LostDeleteForm lostDeleteForm) {
         LostComment lostComment = this.lostCommentService.getComment(id).orElse(null);
-        if (lostComment == null) return new ResponseEntity(HttpStatus.NOT_FOUND);
+        if (lostComment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
 
         if (lostDeleteForm.getPassword() == null || lostDeleteForm.getPassword().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");
