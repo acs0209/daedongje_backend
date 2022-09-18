@@ -30,7 +30,7 @@ public class PhotoAnswerApi {
     public ResponseEntity<PhotoCreateResponse> createAnswer(@PathVariable("id") Long id,
                                                               @Valid @RequestBody PhotoAnswerForm photoAnswerForm, BindingResult bindingResult) {
 
-       PhotoQuestion photoQuestion = photoQuestionService.getQuestion(id);
+       PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
 
         if (bindingResult.hasErrors()) {
 

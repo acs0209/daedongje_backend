@@ -60,6 +60,7 @@ public class PhotoCommentApi {
 //        return ResponseEntity.ok(commentForm);
 //    }
 
+    // 대댓글 수정
     @PutMapping("/{id}")
     public ResponseEntity<PhotoCommentModifyForm> modifyComment(@Valid @RequestBody PhotoModifyInfoDto photoModifyInfoDto, BindingResult bindingResult,
                                                                 @PathVariable("id") Long id) {

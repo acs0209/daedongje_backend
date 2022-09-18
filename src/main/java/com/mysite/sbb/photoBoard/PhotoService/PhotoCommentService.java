@@ -31,7 +31,7 @@ public class PhotoCommentService {
 
     // 질문 댓글
     public Page<PhotoComment> getQuestionCommentList(int page, Long id) {
-        PhotoQuestion photoQuestion = photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
         Pageable pageable = PageRequest.of(page, 10);
         return this.photoCommentRepository.findAllByPhotoQuestion(photoQuestion, pageable);
     }

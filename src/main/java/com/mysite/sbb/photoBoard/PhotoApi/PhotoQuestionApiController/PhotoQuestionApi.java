@@ -59,7 +59,7 @@ public class PhotoQuestionApi {
 
         // 답변 페이징 처리
         Page<PhotoAnswer> pagingAnswer = photoAnswerService.getList(page, id);
-        PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
         Page<PhotoComment> commentPage = photoCommentService.getQuestionCommentList(page, id);
 
         if (pagingAnswer.getNumberOfElements() == 0 && page != 0) {
@@ -74,8 +74,8 @@ public class PhotoQuestionApi {
 
         Map<String, Object> result = new HashMap<>();
         result.put("photoQuestion", photoQuestionDto);
-        result.put("answers", answerPagingDto);
-        result.put("questionComments", commentDtoPage);
+        result.put("photoAnswers", answerPagingDto);
+        result.put("photoQuestionComments", commentDtoPage);
 
         return ResponseEntity.ok(result);
     }
@@ -111,7 +111,7 @@ public class PhotoQuestionApi {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-      PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+      PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
 
         if (!photoQuestion.getPassword().equals(photoQuestionForm.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
@@ -126,7 +126,7 @@ public class PhotoQuestionApi {
     // 삭제 api --> form-date로 보내야 한다.
     @DeleteMapping("/{id}")
     public ResponseEntity<PhotoSuccessDto> questionDelete(@Valid PhotoDeleteInfoDto photoDeleteInfoDto, @PathVariable("id") Long id) {
-        PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
 
         if (!photoQuestion.getPassword().equals(photoDeleteInfoDto.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제 권한이 없습니다.");

@@ -51,7 +51,7 @@ public class PhotoQuestionService {
      * 리포지터리로 얻은 Question 객체는 Optional 객체이기 때문에 isPresent 메서드로 해당 데이터가 존재하는지 검사하는 로직이 필요
      * 만약 id 값에 해당하는 Question 데이터가 없을 경우에는 DataNotFoundException 을 발생시키도록 함
      * */
-    public PhotoQuestion getQuestion(Long id) {
+    public PhotoQuestion getPhotoQuestion(Long id) {
         Optional<PhotoQuestion> photoQuestion = this.photoQuestionRepository.findById(id);
         if (photoQuestion.isPresent()) {
             return photoQuestion.get();

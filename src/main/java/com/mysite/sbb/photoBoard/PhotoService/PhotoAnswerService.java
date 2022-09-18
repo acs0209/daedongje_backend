@@ -34,15 +34,13 @@ public class PhotoAnswerService {
         photoAnswer.setUsername(username);
         photoAnswer.setPassword(password);
         this.photoAnswerRepository.save(photoAnswer);
-        return  photoAnswer;
+        return photoAnswer;
     }
 
     // 답변 페이징 처리
     public Page<PhotoAnswer> getList(int page, Long id) {
-        PhotoQuestion photoQuestion = photoQuestionService.getQuestion(id);
-        List<Sort.Order> sorts = new ArrayList<>();
-        sorts.add(Sort.Order.desc("date"));
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
+        PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
+        Pageable pageable = PageRequest.of(page, 10);
         return this.photoAnswerRepository.findAllByPhotoQuestion(photoQuestion, pageable);
     }
 
@@ -62,7 +60,8 @@ public class PhotoAnswerService {
     }
 
     public Boolean delete(PhotoAnswer photoAnswer) {
-        this.photoAnswerRepository.delete(photoAnswer);;
+        this.photoAnswerRepository.delete(photoAnswer);
+        ;
         return true;
     }
 }

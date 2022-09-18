@@ -11,8 +11,11 @@ public class PhotoCommentModifyForm {
 
     private String content;
 
+    private boolean success;
+
     public PhotoCommentModifyForm(String content) {
         this.content = content;
+        this.success = true; // 댓글 수정 성공 시 true 반환
     }
 
 }
