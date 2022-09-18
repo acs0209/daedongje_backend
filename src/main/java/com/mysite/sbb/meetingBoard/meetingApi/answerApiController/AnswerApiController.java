@@ -11,6 +11,7 @@ import com.mysite.sbb.meetingBoard.meetingService.QuestionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +25,7 @@ public class AnswerApiController {
 
     private final QuestionService questionService;
     private final AnswerService answerService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/{id}")
     public ResponseEntity<AnswerCreateForm> createAnswer(@PathVariable("id") Long id,
@@ -35,19 +37,13 @@ public class AnswerApiController {
 
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
-        Answer answer = this.answerService.create(question, answerForm.getContent(), answerForm.getUsername(), answerForm.getPassword());
+
+        String encodePassword = passwordEncoder.encode(answerForm.getPassword());
+        Answer answer = this.answerService.create(question, answerForm.getContent(), answerForm.getUsername(), encodePassword);
 
         AnswerCreateForm answerCreateForm = new AnswerCreateForm(answerForm.getContent(), answerForm.getUsername(), answer.getCreateDate());
         return ResponseEntity.ok(answerCreateForm);
     }
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<AnswerForm> answerModify(AnswerForm answerForm, @PathVariable("id") Long id) {
-//
-//        Answer answer = this.answerService.getAnswer(id);
-//        answerForm.setContent(answer.getContent());
-//        return ResponseEntity.ok(answerForm);
-//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<AnswerModifyForm> answerModify(@Valid @RequestBody MeetingModifyInfoDto meetingModifyInfoDto, BindingResult bindingResult,
@@ -57,9 +53,10 @@ public class AnswerApiController {
         }
         Answer answer = this.answerService.getAnswer(id);
 
-        if (!answer.getPassword().equals(meetingModifyInfoDto.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+        if ( !passwordEncoder.matches(meetingModifyInfoDto.getPassword(), answer.getPassword()) ) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
         }
+
         this.answerService.modify(answer, meetingModifyInfoDto.getContent());
 
         AnswerModifyForm answerModifyForm = new AnswerModifyForm(meetingModifyInfoDto.getContent());
@@ -70,7 +67,7 @@ public class AnswerApiController {
     public ResponseEntity<MeetingSuccessDto> answerDelete(@Valid @RequestBody MeetingDeleteInfoDto meetingDeleteInfoDto, @PathVariable("id")Long id) {
         Answer answer = this.answerService.getAnswer(id);
 
-        if (!answer.getPassword().equals(meetingDeleteInfoDto.getPassword())) {
+        if ( !passwordEncoder.matches(meetingDeleteInfoDto.getPassword(), answer.getPassword()) ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
 
@@ -78,4 +75,12 @@ public class AnswerApiController {
         return ResponseEntity.ok(meetingSuccessDto);
     }
 
+
+    //    @GetMapping("/{id}")
+//    public ResponseEntity<AnswerForm> answerModify(AnswerForm answerForm, @PathVariable("id") Long id) {
+//
+//        Answer answer = this.answerService.getAnswer(id);
+//        answerForm.setContent(answer.getContent());
+//        return ResponseEntity.ok(answerForm);
+//    }
 }

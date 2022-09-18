@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
-    Question findBySubject(String subject);
-    Question findBySubjectAndContent(String subject, String content);
-    List<Question> findBySubjectLike(String subject);
+//    Question findBySubject(String subject);
+//    Question findBySubjectAndContent(String subject, String content);
+//    List<Question> findBySubjectLike(String subject);
 
     // Pageable 객체를 입력으로 받아 Page<Question> 타입 객체를 리턴하는 findAll 메서드
     Page<Question> findAll(Pageable pageable);
@@ -26,8 +26,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
             + "from Question q "
             + "left outer join Answer a on a.question=q "
             + "where "
-            + "   q.subject like %:kw% "
-            + "   or q.content like %:kw% "
+            + "   q.content like %:kw% "
             + "   or q.username like %:kw% "
             + "   or a.content like %:kw% "
             + "   or a.username like %:kw% ")

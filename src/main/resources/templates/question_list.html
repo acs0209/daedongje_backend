@@ -41,7 +41,7 @@
                 <tr class="text-center" th:each="question, loop : ${paging}">
                     <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
                     <td class="text-start">
-                        <a th:href="@{|/question/detail/${question.id}|}" th:text="${question.subject}"></a>
+                        <a th:href="@{|/question/detail/${question.id}|}" th:text="${question.content}"></a>
 
                         <!-- 질문 목록에 "해당 질문에 달린 답변 개수"를 표시할 수 있는 기능 -->
                         <!-- th:if="${#lists.size(question.answerList) > 0}"로 답변이 있는지 조사하고, -->

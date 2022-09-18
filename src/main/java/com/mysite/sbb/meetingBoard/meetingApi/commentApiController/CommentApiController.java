@@ -11,6 +11,7 @@ import com.mysite.sbb.meetingBoard.meetingService.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,6 +26,7 @@ public class CommentApiController {
 
     private final AnswerService answerService;
     private final CommentService commentService;
+    private final PasswordEncoder passwordEncoder;
 
     // 답변 댓글 생성
     @PostMapping(value = "/answers/{id}")
@@ -37,7 +39,9 @@ public class CommentApiController {
             if (bindingResult.hasErrors()) {
                 throw new IllegalArgumentException("잘못된 입력 값입니다.");
             }
-            Comment c = this.commentService.create(answer.get(), commentForm.getContent(), commentForm.getUsername(), commentForm.getPassword());
+
+            String encodePassword = passwordEncoder.encode(commentForm.getPassword());
+            Comment c = this.commentService.create(answer.get(), commentForm.getContent(), commentForm.getUsername(), encodePassword);
 
             CommentCreateForm commentCreateForm = new CommentCreateForm(commentForm.getContent(), commentForm.getUsername(), c.getCreateDate());
             return ResponseEntity.ok(commentCreateForm);
@@ -46,18 +50,6 @@ public class CommentApiController {
         }
     }
 
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<CommentForm> modifyComment(CommentForm commentForm, @PathVariable("id") Long id) {
-//        Optional<Comment> comment = this.commentService.getComment(id);
-//        if (comment.isPresent()) {
-//            Comment c = comment.get();
-//
-//            commentForm.setContent(c.getContent());
-//        }
-//
-//        return ResponseEntity.ok(commentForm);
-//    }
 
     @PutMapping("/{id}")
     public ResponseEntity<CommentModifyForm> modifyComment(@Valid @RequestBody MeetingModifyInfoDto meetingModifyInfoDto, BindingResult bindingResult,
@@ -69,8 +61,8 @@ public class CommentApiController {
         if (comment.isPresent()) {
             Comment c = comment.get();
 
-            if (!c.getPassword().equals(meetingModifyInfoDto.getPassword())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+            if ( !passwordEncoder.matches(meetingModifyInfoDto.getPassword(), c.getPassword()) ) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
             }
 
             c = this.commentService.modify(c, meetingModifyInfoDto.getContent());
@@ -89,8 +81,8 @@ public class CommentApiController {
         if (comment.isPresent()) {
             Comment c = comment.get();
 
-            if (!c.getPassword().equals(meetingDeleteInfoDto.getPassword())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
+            if ( !passwordEncoder.matches(meetingDeleteInfoDto.getPassword(), c.getPassword()) ) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다");
             }
 
             MeetingSuccessDto meetingSuccessDto = new MeetingSuccessDto(this.commentService.delete(c));
@@ -101,4 +93,16 @@ public class CommentApiController {
 
 
     }
+
+    //    @GetMapping("/{id}")
+//    public ResponseEntity<CommentForm> modifyComment(CommentForm commentForm, @PathVariable("id") Long id) {
+//        Optional<Comment> comment = this.commentService.getComment(id);
+//        if (comment.isPresent()) {
+//            Comment c = comment.get();
+//
+//            commentForm.setContent(c.getContent());
+//        }
+//
+//        return ResponseEntity.ok(commentForm);
+//    }
 }

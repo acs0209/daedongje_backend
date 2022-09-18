@@ -7,14 +7,11 @@ import lombok.Setter;
 @Setter
 public class QuestionModifyForm {
 
-    private String subject;
-
     private String content;
 
     private boolean success;
 
-    public QuestionModifyForm(String subject, String content) {
-        this.subject = subject;
+    public QuestionModifyForm(String content) {
         this.content = content;
         this.success = true;
     }

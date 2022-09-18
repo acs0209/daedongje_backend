@@ -225,7 +225,7 @@ class LostPostApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");
         }
 
-        if (lostDeleteForm.getPassword().equals(lostPost.getPassword())) {
+        if (!lostPost.getPassword().equals(lostDeleteForm.getPassword())) {
             LostSuccessDto lostSuccessDto = new LostSuccessDto(this.lostPostService.delete(lostPost));
             lostPostService.deleteFile(lostPost);
             return ResponseEntity.ok(lostSuccessDto);

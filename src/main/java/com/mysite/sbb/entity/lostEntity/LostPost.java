@@ -35,7 +35,6 @@ public class LostPost {
     private String filepath;
 
     @Size(min=1, max=15, message = "닉네임은 한 글자 이상, 15 글자 이하여야 합니다.")
-    @NotNull(message = "닉네임은 필수 항목입니다.")
     private String username;
 
     @NotNull(message = "비밀번호는 필수 항목입니다.")

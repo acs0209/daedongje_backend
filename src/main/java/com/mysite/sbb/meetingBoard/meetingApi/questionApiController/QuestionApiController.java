@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -49,7 +48,7 @@ public class QuestionApiController {
 
         Page<QuestionDto> questionDtoPage = paging.map(
                 post -> new QuestionDto(
-                      post.getId(),post.getSubject(),post.getContent(),post.getCreateDate(),
+                      post.getId(),post.getContent(),post.getCreateDate(),
                       post.getUsername(),post.getView()
                 ));
 
@@ -75,7 +74,7 @@ public class QuestionApiController {
         }
 
         questionService.updateView(id); // views ++ 조회수 처리
-        QuestionDto questionDto = new QuestionDto(question.getId(), question.getSubject(), question.getContent(),
+        QuestionDto questionDto = new QuestionDto(question.getId(), question.getContent(),
                 question.getCreateDate(),question.getUsername() ,question.getView());
 
         Page<AnswerDto> answerPagingDto = pagingAnswer.map(
@@ -121,16 +120,15 @@ public class QuestionApiController {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-
         Question question = this.questionService.getQuestion(id);
         // !question.getPassword().equals(passwordEncoder.encode(questionRequestDto.getPassword()))
         if ( !passwordEncoder.matches(questionRequestDto.getPassword(), question.getPassword()) ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
         }
 
-        this.questionService.modify(question, questionRequestDto.getSubject(), questionRequestDto.getContent());
+        this.questionService.modify(question, questionRequestDto.getContent());
 
-        QuestionModifyForm questionModifyForm = new QuestionModifyForm(question.getSubject(), question.getContent());
+        QuestionModifyForm questionModifyForm = new QuestionModifyForm(question.getContent());
         return ResponseEntity.ok(questionModifyForm);
     }
 
@@ -139,7 +137,7 @@ public class QuestionApiController {
     public ResponseEntity<MeetingSuccessDto> questionDelete(@Valid @RequestBody MeetingDeleteInfoDto meetingDeleteInfoDto, @PathVariable("id") Long id) {
         Question question = this.questionService.getQuestion(id);
 
-        if (!question.getPassword().equals(meetingDeleteInfoDto.getPassword())) {
+        if ( !passwordEncoder.matches(meetingDeleteInfoDto.getPassword(), question.getPassword()) ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제 권한이 없습니다.");
         }
 

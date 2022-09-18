@@ -13,8 +13,6 @@ public class QuestionDto {
 
     private Long id;
 
-    private String subject;
-
     private String content;
 
     private String createDate;
@@ -23,10 +21,9 @@ public class QuestionDto {
 
     private Integer view;
 
-    public QuestionDto(Long id, String subject, String content, String createDate,
+    public QuestionDto(Long id, String content, String createDate,
                        String username, Integer view) {
         this.id = id;
-        this.subject = subject;
         this.content = content;
         this.createDate = createDate;
         this.username = username;

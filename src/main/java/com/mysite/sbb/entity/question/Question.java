@@ -19,15 +19,13 @@ public class Question {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 200)
-    private String subject;
-
     @Column(columnDefinition = "TEXT")
     private String content;
 
     private String createDate; //date변경
 
     private String username;
+
     private String password;
 
     /*

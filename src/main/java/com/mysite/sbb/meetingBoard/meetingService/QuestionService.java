@@ -76,8 +76,7 @@ public class QuestionService {
         return q;
     }
 
-    public void modify(Question question, String subject, String content) {
-        question.setSubject(subject);
+    public void modify(Question question, String content) {
         question.setContent(content);
         this.questionRepository.save(question);
         // return question;
