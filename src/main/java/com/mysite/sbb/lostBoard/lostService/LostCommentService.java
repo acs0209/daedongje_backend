@@ -4,6 +4,7 @@ import com.mysite.sbb.entity.lostEntity.LostAnswer;
 import com.mysite.sbb.entity.lostEntity.LostComment;
 import com.mysite.sbb.entity.lostEntity.LostCommentRepository;
 import com.mysite.sbb.entity.lostEntity.LostPost;
+import com.mysite.sbb.lostBoard.lostForm.LostCreateForm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,7 +27,7 @@ public class LostCommentService {
     @Autowired
     private LostAnswerService lostAnswerService;
 
-    public LostComment create(LostAnswer lostAnswer, LostComment lostComment) {
+    public LostComment create(LostAnswer lostAnswer, LostCreateForm lostComment) {
         LostComment c = new LostComment();
         c.setContent(lostComment.getContent());
         c.setCreateDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
@@ -66,5 +67,10 @@ public class LostCommentService {
 
         this.lostCommentRepository.delete(c);
         return true;
+    }
+
+    public Boolean isValidNickname(String nickname) {
+        String regex = "^[a-zA-Z]{1}[a-zA-Z0-9_]{4,11}$";
+        return regex.matches(nickname);
     }
 }

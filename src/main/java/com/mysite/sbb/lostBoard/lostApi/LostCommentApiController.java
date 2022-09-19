@@ -4,6 +4,7 @@ import com.mysite.sbb.lostBoard.lostDto.LostSuccessDto;
 import com.mysite.sbb.entity.lostEntity.LostAnswer;
 import com.mysite.sbb.entity.lostEntity.LostComment;
 import com.mysite.sbb.entity.lostEntity.LostCommentRepository;
+import com.mysite.sbb.lostBoard.lostForm.LostCreateForm;
 import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostCommentService;
@@ -54,7 +55,11 @@ public class LostCommentApiController {
 
     // 대댓글 등록 API
     @PostMapping(value = "/comments/{id}")
-    public ResponseEntity<LostSuccessDto> createLostPostComment(@PathVariable("id") Long id, @Valid @RequestBody LostComment lostCommentForm) {
+    public ResponseEntity<LostSuccessDto> createLostPostComment(@PathVariable("id") Long id, @Valid @RequestBody LostCreateForm lostCommentForm) {
+
+        if (lostCommentForm.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
 
         String encodePassword = passwordEncoder.encode(lostCommentForm.getPassword());
         lostCommentForm.setPassword(encodePassword);
@@ -82,6 +87,10 @@ public class LostCommentApiController {
     // 대댓글 수정 api
     @PutMapping("/comments/{id}")
     public ResponseEntity<LostSuccessDto> answerModify(@Valid @RequestBody LostComment newLostComment, @PathVariable("id") Long id) {
+
+        if (newLostComment.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
 
         LostComment exLostComment = lostCommentRepository.findById(id).orElse(null);
         if (exLostComment == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");

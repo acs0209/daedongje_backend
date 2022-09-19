@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +42,19 @@ public class LostPostService {
 
         lostPostRepository.save(lostPost);
 
+    }
+
+    public LostPost new_create(String subject, String content, String username, Boolean isLost, String encodePassword) throws Exception {
+        LostPost q = new LostPost();
+        q.setSubject(subject); // 제목
+        q.setContent(content); // 내용
+        String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")); // 작성 시간 포멧팅
+        q.setCreateDate(currentTime); // 작성 일시 저장
+        q.setUsername(username); // 사용자 이름
+        q.setPassword(encodePassword); // 암호화된 비밀 번호
+        q.setIsLost(isLost);
+
+        return q;
     }
 
     public Boolean delete(LostPost lostPost) {

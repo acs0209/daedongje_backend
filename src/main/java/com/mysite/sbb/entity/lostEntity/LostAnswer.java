@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,11 +28,11 @@ public class LostAnswer {
 
     private String createDate;
 
-    @Size(min=4, max=15, message = "닉네임은 네 글자 이상, 15 글자 이하여야 합니다.")
+
+    @Pattern(regexp="^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$", message = "닉네임은 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성해주세요.")
     private String username;
 
     @NotBlank(message = "비밀번호는 필수 항목입니다.")
-    @Size(min=4, max=60, message = "비밀번호는 네 자리 이상, 20자리 이하여야 합니다.")
     private String password;
 
     @ManyToOne

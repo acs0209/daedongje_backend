@@ -5,8 +5,8 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -17,8 +17,8 @@ public class LostPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Size(min=2, max=20, message = "제목은 2글자 이상, 50글자 이하여야 합니다.")
+    @NotBlank(message = "제목은 필수 항목입니다.")
+    @Size(min=1, max=20, message = "제목은 최소 한 글자 이상, 50글자 이하여야 합니다.")
     private String subject;
 
     @NotBlank(message = "내용은 필수 항목입니다.")
@@ -36,11 +36,11 @@ public class LostPost {
 
     private String filepath;
 
-    @Size(min=4, max=15, message = "닉네임은 네 글자 이상, 15 글자 이하여야 합니다.")
+
+    @Pattern(regexp="^(?=.*[a-z0-9가-힣])[a-z0-9가-힣]{2,16}$", message = "닉네임은 2자 이상 16자 이하, 영어 또는 숫자 또는 한글로 구성해주세요.")
     private String username;
 
     @NotBlank(message = "비밀번호는 필수 항목입니다.")
-    @Size(min=4, max=60, message = "비밀번호는 네 자리 이상, 20자리 이하여야 합니다.")
     @JsonIgnore
     private String password;
 

@@ -4,6 +4,7 @@ import com.mysite.sbb.exception.exception.DataNotFoundException;
 import com.mysite.sbb.entity.lostEntity.LostAnswer;
 import com.mysite.sbb.entity.lostEntity.LostAnswerRepository;
 import com.mysite.sbb.entity.lostEntity.LostPost;
+import com.mysite.sbb.lostBoard.lostForm.LostCreateForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +25,7 @@ public class LostAnswerService {
     private final LostPostService lostPostService;
     private final LostAnswerRepository lostAnswerRepository;
 
-    public LostAnswer create(LostPost lostPost, LostAnswer lostAnswerForm) {
+    public LostAnswer create(LostPost lostPost, LostCreateForm lostAnswerForm) {
         LostAnswer lostAnswer = new LostAnswer();
         lostAnswer.setContent(lostAnswerForm.getContent());
         lostAnswer.setCreateDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")));
@@ -60,6 +61,11 @@ public class LostAnswerService {
     public Boolean delete(LostAnswer lostAnswer) {
         this.lostAnswerRepository.delete(lostAnswer);;
         return true;
+    }
+
+    public Boolean isValidNickname(String nickname) {
+        String regex = "^[a-zA-Z]{1}[a-zA-Z0-9_]{4,11}$";
+        return regex.matches(nickname);
     }
 
 }
