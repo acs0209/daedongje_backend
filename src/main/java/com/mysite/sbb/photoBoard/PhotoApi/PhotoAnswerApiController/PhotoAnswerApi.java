@@ -33,6 +33,11 @@ public class PhotoAnswerApi {
     public ResponseEntity<PhotoCreateResponse> createAnswer(@PathVariable("id") Long id,
                                                             @Valid @RequestBody PhotoAnswerForm photoAnswerForm, BindingResult bindingResult) {
 
+        // 내용에 공백만 입력한 경우
+        if (photoAnswerForm.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
 
         if (bindingResult.hasErrors()) {
@@ -62,6 +67,12 @@ public class PhotoAnswerApi {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
+
+        // 내용에 공백만 입력한 경우
+        if (photoModifyInfoDto.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         PhotoAnswer photoAnswer = this.photoAnswerService.getPhotoAnswer(id);
 
         // 사용자가 입력한 raw한 비밀번호와 일치하지 않는 경우

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/meeting/post")
+@RequestMapping("/meeting/posts")
 @RequiredArgsConstructor
 public class QuestionApiController {
 

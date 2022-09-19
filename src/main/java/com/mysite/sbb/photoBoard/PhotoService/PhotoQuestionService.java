@@ -67,7 +67,7 @@ public class PhotoQuestionService {
     * */
     }
 
-    public void create(String subject, String content, String username, String password, MultipartFile file) throws Exception {
+    public PhotoQuestion create(String subject, String content, String username, String password, MultipartFile file) throws Exception {
         PhotoQuestion q = new PhotoQuestion();
         q.setSubject(subject);
         q.setContent(content);
@@ -75,14 +75,14 @@ public class PhotoQuestionService {
         q.setDate(currentTime); // 작성 일시 저장
         q.setUsername(username);
         q.setPassword(password);
-        if (file == null) { // 사진이 존재하지 않다면,
+        if (file.getOriginalFilename().isEmpty()) { // 사진이 존재하지 않다면,
             q.setFilename(null);
             q.setFilepath(null);
             this.photoQuestionRepository.save(q); // 그냥 DB에 저장
         } else { // 사진이 존재한다면, file의 이름과 경로와 함께 저장
             file_save(q, file);
         }
-        //return q;
+        return q;
     }
 
     // 오버로드
@@ -95,7 +95,7 @@ public class PhotoQuestionService {
         q.setUsername(questionForm.getUsername());
         q.setPassword(questionForm.getPassword());
         // 파일이 존재하는 않는 경우 --> 파일 이름과 경로에 null값을 넣고 저장
-        if (file.getOriginalFilename() == "") {
+        if (file.getOriginalFilename().isEmpty()) {
             q.setFilename(null);
             q.setFilepath(null);
             this.photoQuestionRepository.save(q); // 그냥 DB에 저장
@@ -112,7 +112,7 @@ public class PhotoQuestionService {
         photoQuestion.setContent(content);
 
         // 파일이 존재하지 않는 다면 --> 파일의 이름과 경로에 null값을 넣어 저장
-        if (file.getOriginalFilename() == "") {
+        if (file.getOriginalFilename().isEmpty()) {
             photoQuestion.setFilepath(null);
             photoQuestion.setFilename(null);
             this.photoQuestionRepository.save(photoQuestion);
@@ -145,7 +145,8 @@ public class PhotoQuestionService {
         q.setDate(currentTime); // 작성 일시 저장
         q.setUsername(username); // 사용자 이름
         q.setPassword(encodePassword); // 암호화된 비밀 번호
-        if (file == null) { // 사진이 존재하지 않다면,
+
+        if (file.getOriginalFilename().isEmpty()) { // 사진이 존재하지 않다면,
             q.setFilename(null);
             q.setFilepath(null);
             this.photoQuestionRepository.save(q); // 그냥 DB에 저장
