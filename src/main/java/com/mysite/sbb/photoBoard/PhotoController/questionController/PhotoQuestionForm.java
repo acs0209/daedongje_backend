@@ -22,6 +22,7 @@ public class PhotoQuestionForm {
     private String password;
 
     @NotEmpty(message = "내용은 필수항목입니다.")
+    @Size(min=1, max= 200)
     private String content;
 
     @NotBlank(message="제목은 필수항목입니다.")
