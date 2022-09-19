@@ -30,6 +30,7 @@ public class Answer {
     private String createDate;
 
     private String username;
+
     private String password;
 
     @JsonIgnore
