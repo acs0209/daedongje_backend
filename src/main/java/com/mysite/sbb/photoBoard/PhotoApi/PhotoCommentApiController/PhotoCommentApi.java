@@ -35,7 +35,13 @@ public class PhotoCommentApi {
     public ResponseEntity<PhotoCommentCreateForm> createAnswerComment(@PathVariable("id") Long id, @Valid @RequestBody PhotoCommentForm photoCommentForm,
                                                                       BindingResult bindingResult) {
 
+        // 대댓글에 공백만 입력한 경우
+        if(photoCommentForm.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         Optional<PhotoAnswer> answer = Optional.ofNullable(this.photoAnswerService.getPhotoAnswer(id));
+
 
         if (answer.isPresent()) {
             if (bindingResult.hasErrors()) {
@@ -74,6 +80,12 @@ public class PhotoCommentApi {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
+
+        // 대댓글 수정할 때, 공백만 입력한 경우
+        if(photoModifyInfoDto.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         Optional<PhotoComment> comment = this.photoCommentService.getComment(id);
         if (comment.isPresent()) {
             PhotoComment c = comment.get();

@@ -145,7 +145,8 @@ public class PhotoQuestionService {
         q.setDate(currentTime); // 작성 일시 저장
         q.setUsername(username); // 사용자 이름
         q.setPassword(encodePassword); // 암호화된 비밀 번호
-        if (file == null) { // 사진이 존재하지 않다면,
+
+        if (file.getOriginalFilename() == "") { // 사진이 존재하지 않다면,
             q.setFilename(null);
             q.setFilepath(null);
             this.photoQuestionRepository.save(q); // 그냥 DB에 저장

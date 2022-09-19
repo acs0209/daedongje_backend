@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/photo/post")
+@RequestMapping("/photo/posts")
 @RequiredArgsConstructor
 public class PhotoQuestionApi {
 
@@ -93,6 +93,16 @@ public class PhotoQuestionApi {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
+        // 제목에 공백만 입력한 경우
+        if (photoQuestionForm.getSubject().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목 입력 필수");
+        }
+
+        // 내용에 공백만 입력한 경우
+        if (photoQuestionForm.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         String encodePassword = passwordEncoder.encode(photoQuestionForm.getPassword()); // 저장된 비밀번호를 가져와서 암호화
         PhotoQuestion q = photoQuestionService.new_create(photoQuestionForm.getSubject(), photoQuestionForm.getContent(), photoQuestionForm.getUsername(), encodePassword, file);
 
@@ -116,6 +126,16 @@ public class PhotoQuestionApi {
     public ResponseEntity<PhotoQuestionModifyForm> questionModify(@Valid PhotoQuestionForm photoQuestionForm, BindingResult bindingResult, @PathVariable("id") Long id, @RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
+        }
+
+        // 제목에 공백만 입력한 경우
+        if (photoQuestionForm.getSubject().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목 입력 필수");
+        }
+
+        // 내용에 공백만 입력한 경우
+        if (photoQuestionForm.getContent().replaceAll("(\r\n|\r|\n|\n\t|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
         }
 
         PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
