@@ -9,6 +9,7 @@ import com.mysite.sbb.entity.lostEntity.LostComment;
 import com.mysite.sbb.entity.lostEntity.LostPost;
 import com.mysite.sbb.entity.lostEntity.LostPostRepository;
 import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
+import com.mysite.sbb.lostBoard.lostForm.LostPostCreateForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostCommentService;
 import com.mysite.sbb.lostBoard.lostService.LostPostService;
@@ -100,10 +101,18 @@ class LostPostApiController {
 
     // 글 작성 API
     @PostMapping("/posts")
-    LostSuccessDto newQuestion(@Valid LostPost newLostPost, MultipartFile file, BindingResult bindingResult) throws Exception {
+    LostSuccessDto newQuestion(@Valid LostPostCreateForm newLostPost, MultipartFile file, BindingResult bindingResult) throws Exception {
 
+        if (newLostPost.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
+        if (newLostPost.getSubject().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목 입력 필수");
+        }
+
+        // 비밀번호 암호화
         String encodePassword = passwordEncoder.encode(newLostPost.getPassword());
-        newLostPost.setPassword(encodePassword);
 
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
@@ -113,18 +122,17 @@ class LostPostApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
         }
 
-        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        newLostPost.setCreateDate(now);
+        LostPost resultLostPost = lostPostService.new_create(newLostPost.getSubject(), newLostPost.getContent(), newLostPost.getUsername(), newLostPost.getIsLost(), encodePassword);
 
         if (file == null) {
-            repository.save(newLostPost);
+            repository.save(resultLostPost);
         } else {
-            lostPostService.write(newLostPost, file);
+            lostPostService.write(resultLostPost, file);
         }
 
         LostSuccessDto lostSuccessDto;
         // DB에 잘 저장 되었으면 true 아니면 false
-        if (repository.findById(newLostPost.getId()).orElse(null) != null) {
+        if (repository.findById(resultLostPost.getId()).orElse(null) != null) {
             lostSuccessDto = new LostSuccessDto(true);
         } else {
             lostSuccessDto = new LostSuccessDto(false);
@@ -136,6 +144,14 @@ class LostPostApiController {
     // 글 수정 API
     @PutMapping("/posts/{id}")
     ResponseEntity<LostSuccessDto> replaceQuestion(@Valid LostPost newLostPost, @PathVariable Long id, MultipartFile file, BindingResult bindingResult) {
+
+        if (newLostPost.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
+        if (newLostPost.getSubject().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목 입력 필수");
+        }
 
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");

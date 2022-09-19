@@ -4,6 +4,7 @@ import com.mysite.sbb.lostBoard.lostDto.LostSuccessDto;
 import com.mysite.sbb.entity.lostEntity.LostAnswer;
 import com.mysite.sbb.entity.lostEntity.LostAnswerRepository;
 import com.mysite.sbb.entity.lostEntity.LostPost;
+import com.mysite.sbb.lostBoard.lostForm.LostCreateForm;
 import com.mysite.sbb.lostBoard.lostForm.LostDeleteForm;
 import com.mysite.sbb.lostBoard.lostService.LostAnswerService;
 import com.mysite.sbb.lostBoard.lostService.LostPostService;
@@ -45,14 +46,14 @@ public class LostAnswerApiController {
 
     // 댓글 등록 API
     @PostMapping("/answers/{id}")
-    public ResponseEntity<LostSuccessDto> answerCreate(@PathVariable Long id, @Valid @RequestBody LostAnswer lostAnswerForm){
+    public ResponseEntity<LostSuccessDto> answerCreate(@PathVariable Long id, @Valid @RequestBody LostCreateForm lostAnswerForm){
+
+        if (lostAnswerForm.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
 
         String encodePassword = passwordEncoder.encode(lostAnswerForm.getPassword());
         lostAnswerForm.setPassword(encodePassword);
-
-        if (lostAnswerForm.getUsername() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
-        }
 
         LostPost lostPost = this.lostPostService.getQuestion(id);
         if (lostPost == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
@@ -75,6 +76,10 @@ public class LostAnswerApiController {
     // 댓글 수정 api
     @PutMapping("/answers/{id}")
     public ResponseEntity<LostSuccessDto> answerModify(@Valid @RequestBody LostAnswer newLostAnswer, @PathVariable("id") Long id) {
+
+        if (newLostAnswer.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
 
         LostAnswer exLostAnswer = lostAnswerRepository.findById(id).orElse(null);
         if (exLostAnswer == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "요청하신 데이터를 찾을 수 없습니다.");
@@ -112,7 +117,7 @@ public class LostAnswerApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");
         }
 
-        if (passwordEncoder.matches(lostDeleteForm.getPassword(), lostAnswer.getPassword())) {
+        if (!passwordEncoder.matches(lostDeleteForm.getPassword(), lostAnswer.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
 
