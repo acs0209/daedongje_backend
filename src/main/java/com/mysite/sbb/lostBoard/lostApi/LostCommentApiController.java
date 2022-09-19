@@ -119,7 +119,7 @@ public class LostCommentApiController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비밀번호 입력 필수");
         }
 
-        if (passwordEncoder.matches(lostDeleteForm.getPassword(), lostComment.getPassword())) {
+        if (!passwordEncoder.matches(lostDeleteForm.getPassword(), lostComment.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
         }
 

@@ -105,6 +105,10 @@ public class QuestionApiController {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
+        if (questionForm.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         String encodePassword = passwordEncoder.encode(questionForm.getPassword());
         Question question = questionService.create(questionForm.getContent(), questionForm.getUsername(), encodePassword);
 
@@ -118,6 +122,10 @@ public class QuestionApiController {
                                             @PathVariable("id") Long id) {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
+        }
+
+        if (questionRequestDto.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
         }
 
         Question question = this.questionService.getQuestion(id);

@@ -24,7 +24,6 @@ public class PhotoQuestionDto {
     private String filepath;
     private Integer view;
 
-    private Integer voter;
 
     public PhotoQuestionDto(Long id, String subject, String content, String date,
                             String username, Integer view, String filename, String filepath) {
@@ -35,7 +34,6 @@ public class PhotoQuestionDto {
         this.username = username;
         this.view = view;
         this.filename = filename;
-
         this.filepath = filepath;
     }
 }

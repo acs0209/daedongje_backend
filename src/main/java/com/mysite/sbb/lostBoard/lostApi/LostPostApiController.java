@@ -109,10 +109,6 @@ class LostPostApiController {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-        if (newLostPost.getUsername() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "닉네임 입력 필수");
-        }
-
         String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
         newLostPost.setCreateDate(now);
 

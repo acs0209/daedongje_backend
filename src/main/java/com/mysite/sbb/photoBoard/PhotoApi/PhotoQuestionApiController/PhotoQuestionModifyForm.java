@@ -14,12 +14,14 @@ public class PhotoQuestionModifyForm {
     private String filename;
     private String filepath;
 
+    private boolean success; 
+
 
     public PhotoQuestionModifyForm(String subject, String content, String filename, String filepath) {
         this.subject = subject;
         this.content = content;
         this.filename = filename;
         this.filepath = filepath;
+        this.success = true; // 게시글 수정 시 true 반환
     }
-
 }

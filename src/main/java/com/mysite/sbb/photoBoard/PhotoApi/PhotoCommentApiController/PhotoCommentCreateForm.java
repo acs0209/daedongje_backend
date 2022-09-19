@@ -15,10 +15,13 @@ public class PhotoCommentCreateForm {
 
     private String createDate;
 
+    private Boolean success;
+
     public PhotoCommentCreateForm(String username, String content, String createDate){
         this.username = username;
         this.content = content;
         this.createDate = createDate;
+        this.success = true;
     }
 
 }

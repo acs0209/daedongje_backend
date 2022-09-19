@@ -22,6 +22,8 @@ public class PhotoQuestionApiForm {
 
     private String createDate;
 
+    private Boolean success;
+
     public PhotoQuestionApiForm(String subject, String content, String username, String filename, String filepath, String createDate) {
         this.subject = subject;
         this.content = content;
@@ -29,6 +31,7 @@ public class PhotoQuestionApiForm {
         this.filename = filename;
         this.filepath = filepath;
         this.createDate = createDate;
+        this.success = true;
     }
 
 }

@@ -55,7 +55,7 @@ public class PhotoQuestionController {
 
         // 답변 페이징 처리
         Page<PhotoAnswer> pagingAnswer = photoAnswerService.getList(page, id);
-        PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
         photoQuestionService.updateView(id); // views ++ 조회수 처리
         model.addAttribute("pagingAnswer", pagingAnswer);
         model.addAttribute("photoQuestion", photoQuestion);

@@ -31,6 +31,10 @@ public class AnswerApiController {
     public ResponseEntity<AnswerCreateForm> createAnswer(@PathVariable("id") Long id,
                                                          @Valid @RequestBody AnswerForm answerForm, BindingResult bindingResult) {
 
+        if (answerForm.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         Question question = questionService.getQuestion(id);
 
         if (bindingResult.hasErrors()) {
@@ -51,6 +55,11 @@ public class AnswerApiController {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
+
+        if (meetingModifyInfoDto.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         Answer answer = this.answerService.getAnswer(id);
 
         if ( !passwordEncoder.matches(meetingModifyInfoDto.getPassword(), answer.getPassword()) ) {

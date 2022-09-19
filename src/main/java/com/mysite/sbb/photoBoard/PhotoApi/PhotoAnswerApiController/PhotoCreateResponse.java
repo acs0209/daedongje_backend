@@ -12,11 +12,13 @@ public class PhotoCreateResponse {
     private String content;
     private String username;
     private String createDate;
+    private Boolean success;
 
     public PhotoCreateResponse(String content, String username, String createDate) {
         this.content = content;
         this.username = username;
         this.createDate = createDate;
+        this.success = true;
     }
 
 }

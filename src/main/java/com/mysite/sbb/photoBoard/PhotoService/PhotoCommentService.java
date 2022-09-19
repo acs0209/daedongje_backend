@@ -31,21 +31,21 @@ public class PhotoCommentService {
 
     // 질문 댓글
     public Page<PhotoComment> getQuestionCommentList(int page, Long id) {
-        PhotoQuestion photoQuestion = photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = photoQuestionService.getPhotoQuestion(id);
         Pageable pageable = PageRequest.of(page, 10);
         return this.photoCommentRepository.findAllByPhotoQuestion(photoQuestion, pageable);
     }
 
 
     // 답변 댓글
-    public PhotoComment create(PhotoAnswer photoAnswer, String content, String username, String password) {
+    public PhotoComment create(PhotoAnswer photoAnswer, String content, String username, String encodePassword) {
         PhotoComment c = new PhotoComment();
         c.setContent(content);
         String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")); // 작성 시간 포멧팅
         c.setDate(currentTime);
         c.setPhotoAnswer(photoAnswer);
         c.setUsername(username);
-        c.setPassword(password);
+        c.setPassword(encodePassword);
         c = this.photoCommentRepository.save(c);
         return c;
     }

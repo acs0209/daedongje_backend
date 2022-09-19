@@ -35,6 +35,10 @@ public class CommentApiController {
 
         Optional<Answer> answer = Optional.ofNullable(this.answerService.getAnswer(id));
 
+        if (commentForm.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         if (answer.isPresent()) {
             if (bindingResult.hasErrors()) {
                 throw new IllegalArgumentException("잘못된 입력 값입니다.");
@@ -57,7 +61,13 @@ public class CommentApiController {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
+
+        if (meetingModifyInfoDto.getContent().replaceAll("(\r\n|\r|\n|\n\r|\\p{Z}|\\t)", "").length() < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "내용 입력 필수");
+        }
+
         Optional<Comment> comment = this.commentService.getComment(id);
+
         if (comment.isPresent()) {
             Comment c = comment.get();
 

@@ -1,5 +1,6 @@
 package com.mysite.sbb.photoBoard.PhotoApi.PhotoQuestionApiController;
 
+import com.mysite.sbb.entity.PhotoEntity.photoquestion.PhotoQuestionRepository;
 import com.mysite.sbb.photoBoard.PhotoApi.PhotoAnswerApiController.PhotoAnswerDto;
 import com.mysite.sbb.photoBoard.PhotoApi.PhotoCommentApiController.PhotoCommentDto;
 import com.mysite.sbb.photoBoard.PhotoConfigDto.PhotoDeleteInfoDto;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +34,10 @@ public class PhotoQuestionApi {
     private final PhotoQuestionService photoQuestionService;
     private final PhotoAnswerService photoAnswerService;
     private final PhotoCommentService photoCommentService;
+
+    private final PhotoQuestionRepository photoQuestionRepository;
+
+    private final PasswordEncoder passwordEncoder; // 비밀번호 암호화
 
 
     // 게시판 전체 불러오는 것
@@ -59,7 +65,7 @@ public class PhotoQuestionApi {
 
         // 답변 페이징 처리
         Page<PhotoAnswer> pagingAnswer = photoAnswerService.getList(page, id);
-        PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
         Page<PhotoComment> commentPage = photoCommentService.getQuestionCommentList(page, id);
 
         if (pagingAnswer.getNumberOfElements() == 0 && page != 0) {
@@ -74,20 +80,21 @@ public class PhotoQuestionApi {
 
         Map<String, Object> result = new HashMap<>();
         result.put("photoQuestion", photoQuestionDto);
-        result.put("answers", answerPagingDto);
-        result.put("questionComments", commentDtoPage);
+        result.put("photoAnswers", answerPagingDto);
+        result.put("photoQuestionComments", commentDtoPage);
 
         return ResponseEntity.ok(result);
     }
 
-    // 글 생성 api --> 사진 1장만 가능
+    // 글 생성 api --> 사진 1장만 가능 / 비밀번호 암호화 완료
     @PostMapping("/")
     public ResponseEntity<PhotoQuestionApiForm> questionCreate(@Valid PhotoQuestionForm photoQuestionForm, BindingResult bindingResult, @RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-        PhotoQuestion q = photoQuestionService.create(photoQuestionForm, file);
+        String encodePassword = passwordEncoder.encode(photoQuestionForm.getPassword()); // 저장된 비밀번호를 가져와서 암호화
+        PhotoQuestion q = photoQuestionService.new_create(photoQuestionForm.getSubject(), photoQuestionForm.getContent(), photoQuestionForm.getUsername(), encodePassword, file);
 
         PhotoQuestionApiForm photoQuestionApiForm = new PhotoQuestionApiForm(q.getSubject(), q.getContent(), q.getUsername(), q.getFilename(), q.getFilepath(), q.getDate());
         return ResponseEntity.ok(photoQuestionApiForm);
@@ -104,31 +111,33 @@ public class PhotoQuestionApi {
 //        return ResponseEntity.ok(questionApiForm);
 //    }
 
-    // 수정 api
+    // 수정 api -> 비밀번호 암호화 완료
     @PutMapping("/{id}")
     public ResponseEntity<PhotoQuestionModifyForm> questionModify(@Valid PhotoQuestionForm photoQuestionForm, BindingResult bindingResult, @PathVariable("id") Long id, @RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 입력 값입니다.");
         }
 
-      PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
 
-        if (!photoQuestion.getPassword().equals(photoQuestionForm.getPassword())) {
+        // 사용자에게 입력받은 raw 비밀번호 데이터를 암호화된 비밀번호와 비교
+        if (!passwordEncoder.matches(photoQuestionForm.getPassword(), photoQuestion.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다");
         }
 
         this.photoQuestionService.modify(photoQuestion, photoQuestionForm.getSubject(), photoQuestionForm.getContent(), file);
 
-       PhotoQuestionModifyForm photoQuestionModifyForm = new PhotoQuestionModifyForm(photoQuestion.getSubject(), photoQuestion.getContent(), photoQuestion.getFilename(), photoQuestion.getFilepath());
+        PhotoQuestionModifyForm photoQuestionModifyForm = new PhotoQuestionModifyForm(photoQuestion.getSubject(), photoQuestion.getContent(), photoQuestion.getFilename(), photoQuestion.getFilepath());
         return ResponseEntity.ok(photoQuestionModifyForm);
     }
 
-    // 삭제 api --> form-date로 보내야 한다.
+    // 삭제 api --> form-date로 보내야 한다. / 암호화 완료
     @DeleteMapping("/{id}")
     public ResponseEntity<PhotoSuccessDto> questionDelete(@Valid PhotoDeleteInfoDto photoDeleteInfoDto, @PathVariable("id") Long id) {
-        PhotoQuestion photoQuestion = this.photoQuestionService.getQuestion(id);
+        PhotoQuestion photoQuestion = this.photoQuestionService.getPhotoQuestion(id);
 
-        if (!photoQuestion.getPassword().equals(photoDeleteInfoDto.getPassword())) {
+        // 사용자에게 입력받은 raw 비밀번호 데이터를 암호화된 비밀번호와 비교
+        if (!passwordEncoder.matches(photoDeleteInfoDto.getPassword(), photoQuestion.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제 권한이 없습니다.");
         }
 

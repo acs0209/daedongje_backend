@@ -51,7 +51,7 @@ public class PhotoQuestionService {
      * 리포지터리로 얻은 Question 객체는 Optional 객체이기 때문에 isPresent 메서드로 해당 데이터가 존재하는지 검사하는 로직이 필요
      * 만약 id 값에 해당하는 Question 데이터가 없을 경우에는 DataNotFoundException 을 발생시키도록 함
      * */
-    public PhotoQuestion getQuestion(Long id) {
+    public PhotoQuestion getPhotoQuestion(Long id) {
         Optional<PhotoQuestion> photoQuestion = this.photoQuestionRepository.findById(id);
         if (photoQuestion.isPresent()) {
             return photoQuestion.get();
@@ -107,7 +107,6 @@ public class PhotoQuestionService {
         return q;
     }
 
-
     public void modify(PhotoQuestion photoQuestion, String subject, String content, MultipartFile file) throws Exception {
         photoQuestion.setSubject(subject);
         photoQuestion.setContent(content);
@@ -138,6 +137,23 @@ public class PhotoQuestionService {
         return photoQuestionRepository.updateView(id);
     }
 
+    public PhotoQuestion new_create(String subject, String content, String username, String encodePassword, MultipartFile file) throws Exception {
+        PhotoQuestion q = new PhotoQuestion();
+        q.setSubject(subject); // 제목
+        q.setContent(content); // 내용
+        String currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")); // 작성 시간 포멧팅
+        q.setDate(currentTime); // 작성 일시 저장
+        q.setUsername(username); // 사용자 이름
+        q.setPassword(encodePassword); // 암호화된 비밀 번호
+        if (file == null) { // 사진이 존재하지 않다면,
+            q.setFilename(null);
+            q.setFilepath(null);
+            this.photoQuestionRepository.save(q); // 그냥 DB에 저장
+        } else { // 사진이 존재한다면, file의 이름과 경로와 함께 저장
+            file_save(q, file);
+        }
+        return q;
+    }
 
     // 파일 저장 Service
     public void file_save(PhotoQuestion photoQuestion, MultipartFile file) throws Exception {
@@ -154,4 +170,5 @@ public class PhotoQuestionService {
 
         photoQuestionRepository.save(photoQuestion); // 파일 정보와 함께 DB에 저장
     }
+
 }
